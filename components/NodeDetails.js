@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { formatDistance } from 'date-fns';
-import { Drawer, Tabs, Descriptions, Collapse } from 'antd';
+import { formatDistance, format } from 'date-fns';
+import { Drawer, Tabs, Descriptions, Collapse, List } from 'antd';
 
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
@@ -30,6 +30,10 @@ export default class NodeDetail extends Component {
       lastUpdate,
       stdOpenchanConfigs,
       adminInfo,
+      livePeriods,
+      regionName,
+      country,
+      ip,
     } = selectedNode;
 
     const stdOpenchanConfig = _.find(
@@ -38,48 +42,71 @@ export default class NodeDetail extends Component {
     );
 
     return (
-      <Descriptions layout="vertical" column={1} bordered={true} size="small">
-        <Descriptions.Item label="ETH Address">{id}</Descriptions.Item>
-        <Descriptions.Item label="Host">{rpcHost}</Descriptions.Item>
-        <Descriptions.Item label="Accept Connection">
-          {openAccept ? 'Yes' : 'No'}
-        </Descriptions.Item>
-        {lastUpdate && (
-          <Descriptions.Item label="Liveness">
-            Last Update:{' '}
-            {formatDistance(new Date(lastUpdate), new Date(), {
-              addSuffix: true,
-            })}
+      <>
+        <Descriptions layout="vertical" column={1} bordered={true} size="small">
+          <Descriptions.Item label="ETH Address">{id}</Descriptions.Item>
+          <Descriptions.Item label="Host">
+            <b>Domain:</b> {rpcHost}
             <br />
-            Live Time:{' '}
-            {formatDistance(new Date(initialUpdate), new Date(lastUpdate))}
+            <b>IP:</b> {ip}
+            <br />
+            <b>Location:</b> {`${regionName}, ${country}`}
           </Descriptions.Item>
-        )}
-        {stdOpenchanConfig && (
-          <Descriptions.Item label="Channel Config">
-            Token Address: {stdOpenchanConfig.tokenAddr}
-            <br />
-            Minimum Deposit: {stdOpenchanConfig.minDeposit}
-            <br />
-            Maximum Deposit: {stdOpenchanConfig.maxDeposit}
+          <Descriptions.Item label="Accept Connection">
+            {openAccept ? 'Yes' : 'No'}
           </Descriptions.Item>
-        )}
-        {adminInfo && (
-          <Descriptions.Item label="Admin Info">
-            {adminInfo.name}
-            <br />
-            {adminInfo.organization}
-            <br />
-            {adminInfo.address}
-            <br />
-            <a href={adminInfo.website} target="_blank">
-              {adminInfo.website}
-            </a>
-            <br />
-            <a href={`mailto:${adminInfo.email}`}>{adminInfo.email}</a>
-          </Descriptions.Item>
-        )}
-      </Descriptions>
+          {stdOpenchanConfig && (
+            <Descriptions.Item label="Channel Config">
+              <b>Token Address:</b> {stdOpenchanConfig.tokenAddr}
+              <br />
+              <b>Minimum Deposit:</b> {stdOpenchanConfig.minDeposit}
+              <br />
+              <b>Maximum Deposit:</b> {stdOpenchanConfig.maxDeposit}
+            </Descriptions.Item>
+          )}
+          {adminInfo && (
+            <Descriptions.Item label="Admin Info">
+              {adminInfo.name}
+              <br />
+              {adminInfo.organization}
+              <br />
+              {adminInfo.address}
+              <br />
+              <a href={adminInfo.website} target="_blank">
+                {adminInfo.website}
+              </a>
+              <br />
+              <a href={`mailto:${adminInfo.email}`}>{adminInfo.email}</a>
+            </Descriptions.Item>
+          )}
+          {lastUpdate && (
+            <Descriptions.Item label="Liveness">
+              <b>Last Update:</b>{' '}
+              {formatDistance(new Date(lastUpdate), new Date(), {
+                addSuffix: true,
+              })}
+              <br />
+              <b>Live Time:</b>{' '}
+              {formatDistance(new Date(initialUpdate), new Date(lastUpdate))}
+            </Descriptions.Item>
+          )}
+        </Descriptions>
+        <Collapse>
+          <Panel header="Live Periods">
+            <List
+              size="small"
+              dataSource={livePeriods}
+              renderItem={(livePeriod) => (
+                <List.Item>
+                  {format(new Date(livePeriod[0]), 'Pp')}
+                  {' to '}
+                  {format(new Date(livePeriod[1]), 'Pp')}
+                </List.Item>
+              )}
+            />
+          </Panel>
+        </Collapse>
+      </>
     );
   };
 
