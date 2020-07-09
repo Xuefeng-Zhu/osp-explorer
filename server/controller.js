@@ -14,14 +14,20 @@ const IP_GEO = {
   '119.23.226.3': {
     lat: 22.63,
     lon: 113.97,
+    regionName: 'Shenzhen',
+    country: 'China',
   },
   '59.110.60.26': {
     lat: 39.93,
     lon: 116.11,
+    regionName: 'Beijing',
+    country: 'China',
   },
   '8.210.167.66': {
     lat: 22.35,
     lon: 113.84,
+    regionName: 'Hongkong',
+    country: 'China',
   },
 };
 
@@ -36,7 +42,7 @@ async function setup(server, db) {
     );
     const info = OspInfo.toObject(ospInfoMsg);
     const { ethAddr, rpcHost, payments = {} } = info;
-    console.log('New report from', ethAddr);
+    console.log('New report from', ethAddr, rpcHost);
 
     if (config.verifySig) {
       const account = web3.eth.personal.ecRecover(
@@ -56,8 +62,7 @@ async function setup(server, db) {
         data: { lon, lat, country, regionName },
       } = await axios.get(IP_API + ip);
       if (IP_GEO[ip]) {
-        lon = IP_GEO[ip].lon;
-        lat = IP_GEO[ip].lat;
+        ({ lon, lat, country, regionName } = IP_GEO[ip]);
       }
 
       const now = new Date();
@@ -85,6 +90,8 @@ async function setup(server, db) {
         if (initialUpdate) {
           const period = [initialUpdate, lastUpdate];
           update.livePeriods = [...(update.livePeriods || []), period];
+        } else {
+          update.joinedTime = now;
         }
         update.initialUpdate = now;
       }
